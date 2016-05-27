@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 #!/usr/bin/env python3
  
 """Simple HTTP Server With Upload.
@@ -15,6 +16,7 @@ __author__ = "bones7456"
 __home_page__ = "http://li2z.cn/"
  
 import os
+import codecs
 import posixpath
 import http.server
 import urllib.request, urllib.parse, urllib.error
@@ -22,8 +24,8 @@ import cgi
 import shutil
 import mimetypes
 import re
+import string
 from io import BytesIO
- 
  
 class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
  
@@ -40,7 +42,7 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
     """
  
     server_version = "SimpleHTTPWithUpload/" + __version__
- 
+        
     def do_GET(self):
         """Serve a GET request."""
         f = self.send_head()
@@ -119,12 +121,44 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     preline = preline[0:-1]
                 out.write(preline)
                 out.close()
+                self.analyzer(fn)
                 return (True, "File '%s' upload success!" % fn)
             else:
                 out.write(preline)
                 preline = line
         return (False, "Unexpect Ends of data.")
- 
+    
+    def analyzer(self,fd):
+        #p = fd.read()
+        #为了防止编码所错误，使用UTF-8强制编码，不用open函数
+        file = codecs.open(fd,"r","utf-8")
+        origincontent =file.read()
+        #使用正则表达式，把单词提出出来，并都修改为小写格式
+        lowercase = re.findall("\w+",str.lower(origincontent))
+        #去除列表中的重复项，并排序
+        processed = sorted(list(set(lowercase)))
+        #去除含有数字和符号，以及长度小于5的字符串
+        result_list = []
+        count = 0;
+        for item in processed:
+            m = re.search("\d+",item)
+            n = re.search("\W+",item)
+            #if not m and  not n and len(i)>4:
+            if not m and  not n:
+                #print(item)
+                result_list.append(item)
+        file.close()
+        file = codecs.open("total.txt","r","utf-8")
+        #dict =file.read()
+        #print(dict)
+        dict_list = []
+        for dict_word in file.readlines():
+            dict_list.append(dict_word.strip('\n'))
+        #print(dict_list)
+        for word in result_list:
+            if word in dict_list:
+                print(word)
+        
     def send_head(self):
         """Common code for GET and HEAD commands.
 
@@ -289,7 +323,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
  
 def test(HandlerClass = SimpleHTTPRequestHandler,
          ServerClass = http.server.HTTPServer):
-    http.server.test(HandlerClass, ServerClass)
+    # http.server.test是Python库函数，传参时将默认端口改为80
+    http.server.test(HandlerClass, ServerClass,"HTTP/1.0",80)
+    
  
 if __name__ == '__main__':
     test()
