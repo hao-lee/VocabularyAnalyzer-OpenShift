@@ -132,7 +132,7 @@ def analyzer(sourcecontent):
     if ostype == "Windows":
 	dictpath = "total.txt"
     else:
-	dictpath = "~/app-root/runtime/repo/total.txt"
+	dictpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/total.txt"
     dictfd = codecs.open(dictpath,"r","utf-8")
     dict_list = ["abandon"]
     for dictword in dictfd.readlines():
