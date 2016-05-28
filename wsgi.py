@@ -128,7 +128,7 @@ def analyzer(sourcecontent):
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
 	    source_list.append(sourceword)
-    
+    print os.getcwd()
     if ostype == "Windows":
 	dictpath = "total.txt"
     else:
