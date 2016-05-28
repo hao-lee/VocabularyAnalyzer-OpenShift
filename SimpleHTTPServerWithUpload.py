@@ -58,22 +58,30 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
  
     def do_POST(self):
         """Serve a POST request."""
-        r, info = self.deal_post_data()
+        r, info ,result_list = self.deal_post_data()
         print((r, info, "by: ", self.client_address))
         f = BytesIO()
         f.write(b'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
-        f.write(b"<html>\n<title>Upload Result Page</title>\n")
-        f.write(b"<body>\n<h2>Upload Result Page</h2>\n")
+        #f.write(b"<html>\n<title>Upload Result Page</title>\n")
+        #f.write(b"<body>\n<h2>Upload Result Page</h2>\n")
+        f.write("<html>\n<title>分析结果</title>\n".encode())
+        f.write("<body>\n<h2>分析结果如下</h2>\n".encode())        
         f.write(b"<hr>\n")
         if r:
             f.write(b"<strong>Success:</strong>")
         else:
             f.write(b"<strong>Failed:</strong>")
         f.write(info.encode())
+        #输出单词列表
+        f.write("<br><br>以下单词被认为难度较大：<br>".encode())
+        for word in result_list:
+            f.write("<br>".encode())#不要用\n，这是写成html！
+            f.write(word.encode())
+        #
         f.write(("<br><a href=\"%s\">back</a>" % self.headers['referer']).encode())
-        f.write(b"<hr><small>Powerd By: bones7456, check new version at ")
-        f.write(b"<a href=\"http://li2z.cn/?s=SimpleHTTPServerWithUpload\">")
-        f.write(b"here</a>.</small></body>\n</html>\n")
+        f.write(b"<hr><small>Powerd By: ")
+        f.write(b"<a href=\"http://forum.eflclub.me\" target=\"_blank\">EFL Club</a>")
+        f.write(b"</small></body>\n</html>\n")
         length = f.tell()
         f.seek(0)
         self.send_response(200)
@@ -121,43 +129,45 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                     preline = preline[0:-1]
                 out.write(preline)
                 out.close()
-                self.analyzer(fn)
-                return (True, "File '%s' upload success!" % fn)
+                #调用分析函数
+                result_list = self.analyzer(fn)
+                return (True, "File '%s' upload success!" % fn,result_list)
             else:
                 out.write(preline)
                 preline = line
         return (False, "Unexpect Ends of data.")
     
-    def analyzer(self,fd):
+    def analyzer(self,sourcefile):
         #p = fd.read()
         #为了防止编码所错误，使用UTF-8强制编码，不用open函数
-        file = codecs.open(fd,"r","utf-8")
-        origincontent =file.read()
+        sourcefd = codecs.open(sourcefile,"r","utf-8")
+        sourcecontent =sourcefd.read()
         #使用正则表达式，把单词提出出来，并都修改为小写格式
-        lowercase = re.findall("\w+",str.lower(origincontent))
+        sourcecontent = re.findall("\w+",str.lower(sourcecontent))
         #去除列表中的重复项，并排序
-        processed = sorted(list(set(lowercase)))
-        #去除含有数字和符号，以及长度小于5的字符串
-        result_list = []
-        count = 0;
-        for item in processed:
-            m = re.search("\d+",item)
-            n = re.search("\W+",item)
+        sourcecontent = sorted(list(set(sourcecontent)))
+        #去除含有数字和符号
+        source_list = []
+        for sourceword in sourcecontent:
+            m = re.search("\d+",sourceword)
+            n = re.search("\W+",sourceword)
             #if not m and  not n and len(i)>4:
             if not m and  not n:
                 #print(item)
-                result_list.append(item)
-        file.close()
-        file = codecs.open("total.txt","r","utf-8")
-        #dict =file.read()
-        #print(dict)
+                source_list.append(sourceword)
+        sourcefd.close()
+        
+        dictfd = codecs.open("total.txt","r","utf-8")
         dict_list = []
-        for dict_word in file.readlines():
-            dict_list.append(dict_word.strip('\n'))
+        for dictword in dictfd.readlines():
+            dict_list.append(dictword.strip('\n'))
         #print(dict_list)
-        for word in result_list:
+        result_list = []
+        for word in source_list:
             if word in dict_list:
-                print(word)
+                #print(word)
+                result_list.append(word)
+        return result_list
         
     def send_head(self):
         """Common code for GET and HEAD commands.
@@ -220,12 +230,22 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
         f = BytesIO()
         displaypath = cgi.escape(urllib.parse.unquote(self.path))
         f.write(b'<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 3.2 Final//EN">')
-        f.write(("<html>\n<title>Directory listing for %s</title>\n" % displaypath).encode())
-        f.write(("<body>\n<h2>Directory listing for %s</h2>\n" % displaypath).encode())
+        #f.write(("<html>\n<title>Directory listing for %s</title>\n" % displaypath).encode())
+        #f.write(("<body>\n<h2>Directory listing for %s</h2>\n" % displaypath).encode())
+        f.write(("<html>\n<title>英语词汇分析器</title>\n").encode())
+        f.write(("<body>\n<h2>请上传扩展名为txt、srt等文本文件，文件名必须是英文、数字等非中文字符</h2>\n").encode())      
         f.write(b"<hr>\n")
         f.write(b"<form ENCTYPE=\"multipart/form-data\" method=\"post\">")
         f.write(b"<input name=\"file\" type=\"file\"/>")
         f.write(b"<input type=\"submit\" value=\"upload\"/></form>\n")
+        
+        f.write(("该在线工具可以对上传的文本文件进行分析，提取出里面的高难度词汇。该工具是基于内置的词库来识别生词的,词库里面的单词是由专四、专八、托福、雅思、SAT、GRE的核心词汇表经过合并、排序、去重而来的，总计11567个单词，基本上全是比较难的词汇，但也不排除里面含有个别的四六级低阶词汇。\n").encode())          
+        f.write(("<br>Tips:因为英语文本中的单词有很多都不是原形形态，而词库中都是原形，所以会有一些单词匹配不上，为了达到更好的识别效果需要将文本进行lemmatize（词形还原）。请打开下面的网站，将文本复制进去并点击\"MBSP Word Lemmatize\"，结果中右侧的文本就是还原后的。将还原后的文本保存为文本文件（txt等），然后再使用本站工具进行检测会极大的提高识别率！").encode())
+        f.write(("<br><a href=\"http://textanalysisonline.com/mbsp-word-lemmatize\" target=\"_blank\">词形还原</a>").encode())
+        f.write(b"<hr>\n")
+        f.write(("<br>页面不是很好看，将就着用吧，等我忙完毕设再完善完善。").encode())
+        f.write(("<br>本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请<a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a>").encode())
+        """
         f.write(b"<hr>\n<ul>\n")
         for name in list:
             fullname = os.path.join(path, name)
@@ -238,8 +258,9 @@ class SimpleHTTPRequestHandler(http.server.BaseHTTPRequestHandler):
                 displayname = name + "@"
                 # Note: a link to a directory displays with @ and links with /
             f.write(('<li><a href="%s">%s</a>\n'
-                    % (urllib.parse.quote(linkname), cgi.escape(displayname))).encode())
+                    % (urllib.parse.quote(linkname), cgi.escape(displayname))).encode())    
         f.write(b"</ul>\n<hr>\n</body>\n</html>\n")
+        """ 
         length = f.tell()
         f.seek(0)
         self.send_response(200)
