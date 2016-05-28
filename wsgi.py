@@ -100,7 +100,7 @@ def application(environ, start_response):
 	    resultcontent = resultcontent+word+"<br>"
 	response_body = resultpage_part1\
 	    + resultcontent\
-	    +"<br><a href=\"/VocabularyAnalyzer\">Back</a>"\
+	    +"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
 	    +resultpage_part2
     elif environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'] == '/VocabularyAnalyzer':
         ctype = 'text/html'
@@ -128,8 +128,12 @@ def analyzer(sourcecontent):
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
 	    source_list.append(sourceword)
-
-    dictfd = codecs.open("total.txt","r","utf-8")
+    
+    if ostype == "Windows":
+	dictpath = "total.txt"
+    else:
+	dictpath = "~/app-root/runtime/repo/total.txt"
+    dictfd = codecs.open(dictpath,"r","utf-8")
     dict_list = ["abandon"]
     for dictword in dictfd.readlines():
 	dict_list.append(dictword.strip('\n'))
