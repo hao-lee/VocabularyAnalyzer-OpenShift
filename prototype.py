@@ -1,7 +1,7 @@
 # -*- coding: utf-8 -*-
 import re
 import string
-
+#该程序用来测试文本分析功能是否可用
 #输入文本
 r = open("test.srt","r")
 origincontent =r.read()
