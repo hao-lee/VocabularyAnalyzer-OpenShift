@@ -128,13 +128,13 @@ def analyzer(sourcecontent):
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
 	    source_list.append(sourceword)
-    print os.getcwd()
+    #print os.getcwd()
     if ostype == "Windows":
 	dictpath = "total.txt"
     else:
 	dictpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/total.txt"
     dictfd = codecs.open(dictpath,"r","utf-8")
-    dict_list = ["abandon"]
+    dict_list = []#词典单词列表
     for dictword in dictfd.readlines():
 	dict_list.append(dictword.strip('\n'))
     #print(dict_list)
