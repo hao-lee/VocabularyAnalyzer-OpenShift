@@ -41,7 +41,7 @@ submitpage = '''<!doctype html>
 <p>Tips:因为英语文本中的单词有很多都不是原形形态，而词库中都是原形，所以会有一些单词匹配不上，为了达到更好的识别效果需要将文本进行lemmatize（词形还原）。
 请打开<a href=\"http://textanalysisonline.com/mbsp-word-lemmatize\" 
 target=\"_blank\">词形还原工具</a>，将文本复制进去并点击\"MBSP Word 
-Lemmatize\"，结果中右侧的文本就是还原后的。将还原后的文本保存为文本文件（txt等），然后再使用本站工具进行检测会极大的提高识别率！</p>
+Lemmatize\"，结果中右侧的文本就是还原后的。对还原后的文本使用本站工具进行检测会极大的提高识别率！</p>
 <p></p>
 <form method="post" action=""> 
       <div style="text-align:center">
