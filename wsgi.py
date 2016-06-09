@@ -10,6 +10,8 @@ import shutil
 import mimetypes
 import re
 import platform
+import collections
+from collections import OrderedDict
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
@@ -22,6 +24,20 @@ else:
 	execfile(virtualenv, dict(__file__=virtualenv))
     except IOError:
 	pass
+
+#coca 20000词频表路径
+if ostype == "Windows":
+    corpuspath = "coca-20000.txt"
+else:
+    corpuspath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/coca-20000.txt"
+
+#读取词频表
+corpuslist = []
+corpusfd = open(corpuspath, 'r')
+for corpusword in corpusfd.readlines():
+    corpuslist.append(corpusword.strip('\n'))
+print len(corpuslist),"words have been read into memory."
+
 
 #
 # IMPORTANT: Put any additional includes below this line.  If placed above this
@@ -65,7 +81,8 @@ resultpage_part1 = '''<!doctype html>
   <title>Vocabulary Analyzer</title>
 </head>
 <body><div style="text-align:center">
-<p>以下单词被认为难度较大</p>
+<h1>以下单词被认为难度较大</h1>
+<p>左侧为单词，右侧为频度排名，排名越小说明越常用，排名为0说明该单词不包括在20000词频表内。</p>
 <hr>
 '''
 #中间拼接上结果，在拼接html结尾元素
@@ -94,10 +111,14 @@ def application(environ, start_response):
         )
 	ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
 	sourcecontent = post['inputtext'].value
-	resultlist = analyzer(sourcecontent);
+	#调用
+	result = analyzer(sourcecontent);
 	resultcontent = ""
-	for word in resultlist:
-	    resultcontent = resultcontent+word+"<br>"
+	for word,ranking in result.iteritems():
+	    resultcontent = resultcontent+word+"&nbsp"\
+	        +str(ranking)+"<br>"
+	#for word in resultlist:
+	    #resultcontent = resultcontent+word+"<br>"
 	response_body = resultpage_part1\
 	    + resultcontent\
 	    +"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
@@ -138,12 +159,17 @@ def analyzer(sourcecontent):
     for dictword in dictfd.readlines():
 	dict_list.append(dictword.strip('\n'))
     #print(dict_list)
-    result_list = []
-    for word in source_list:
-	if word in dict_list:
-	    #print(word)
-	    result_list.append(word)
-    return result_list
+    result = collections.OrderedDict()
+    for word in source_list:#对每一个待查词汇
+	if word in dict_list:#如果它在高阶词典里
+	    try:
+		ranking = corpuslist.index(word)#查找语料库排名
+	    except ValueError:#语料库不包含此单词
+		ranking = -1
+	    result[word] = ranking+1#下标加1为排名
+    #按照值排序
+    result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
+    return result
 
 #
 # Below for testing only
