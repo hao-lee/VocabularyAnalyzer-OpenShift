@@ -58,7 +58,7 @@ submitpage = '''<!doctype html>
 请打开<a href=\"http://textanalysisonline.com/mbsp-word-lemmatize\" 
 target=\"_blank\">词形还原工具</a>，将文本复制进去并点击\"MBSP Word 
 Lemmatize\"，结果中右侧的文本就是还原后的。对还原后的文本使用本站工具进行检测会极大的提高识别率！</p>
-<p></p>
+<p>本工具同时内置了coca语料库中前20000个常用单词，会对提取出的单词按照常用程度排序。</p>
 <form method="post" action=""> 
       <div style="text-align:center">
       <textarea name="inputtext" cols=130 rows=20>请在此粘贴文本</textarea>
