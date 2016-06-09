@@ -68,8 +68,7 @@ Lemmatize\"，结果中右侧的文本就是还原后的。对还原后的文本
       </div>
 </form>
 <hr>
-<p>页面不是很好看，将就着用吧，等我忙完毕设再完善完善。</p>
-<p><B><font color="#0011ee">本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请<a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a></font></B></p>
+<h2><B><font color="#0011ee">本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请<a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a></font></B></h2>
 </body>
 </html>'''
 #这是结果页面
