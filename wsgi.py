@@ -90,6 +90,7 @@ resultpage_part2 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
+    print environ
     ###############
     print environ['REQUEST_METHOD'],environ['PATH_INFO']
     ###############
