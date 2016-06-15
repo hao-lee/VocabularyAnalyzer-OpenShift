@@ -177,7 +177,7 @@ def analyzer(sourcecontent):
 #记录用户数据
 def save_log(environ,sourcecontent):
     try:
-	print environ['HTTP_X_FORWARDED_FOR'].split(',')
+	print "\n注意：\n"+environ['HTTP_X_REAL_IP']
 	user_ip = environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
     except KeyError:
 	user_ip = environ['REMOTE_ADDR']
