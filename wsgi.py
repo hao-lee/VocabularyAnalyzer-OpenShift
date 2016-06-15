@@ -13,6 +13,7 @@ import platform
 import collections
 from collections import OrderedDict
 import urllib2
+import time
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
@@ -26,20 +27,29 @@ else:
     except IOError:
 	pass
 
-#coca 20000词频表路径
+#coca 20000词频表路径和高阶词库路径
 if ostype == "Windows":
     corpuspath = "coca-20000.txt"
+    dictpath = "total.txt"
 else:
     corpuspath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/coca-20000.txt"
+    dictpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/total.txt"
 
-#读取词频表
+#读取词频表，注意要用list，保证次序（排名）
 corpuslist = []
 corpusfd = open(corpuspath, 'r')
 for corpusword in corpusfd.readlines():
     corpuslist.append(corpusword.strip('\n'))
 print len(corpuslist),"words have been read into memory."
-
-
+corpusfd.close()
+#读取高阶词库，为了提高查找效率，这里使用dict_set，可以让效率提高7.7倍。
+#也不要把这块代码放到analyzer函数里，那样耗费的时间会高出70多倍。
+dictfd = open(dictpath, 'r')#codecs.open(dictpath,"r","utf-8")
+dict_list = []#词典单词列表
+for dictword in dictfd.readlines():
+    dict_list.append(dictword.strip('\n'))
+dict_set = set(dict_list)
+dictfd.close()
 #
 # IMPORTANT: Put any additional includes below this line.  If placed above this
 # line, it's possible required libraries won't be in your searchable path
@@ -90,6 +100,7 @@ resultpage_part2 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
+    start_time = time.clock()#计时起点
     ###############
     print environ['REQUEST_METHOD'],environ['PATH_INFO']
     ###############
@@ -119,9 +130,13 @@ def application(environ, start_response):
 	for word,ranking in result.iteritems():
 	    resultcontent = resultcontent+word+"&nbsp"\
 	        +str(ranking)+"<br>"
-	#for word in resultlist:
-	    #resultcontent = resultcontent+word+"<br>"
+	
+	tmplist = sourcecontent.split(" ")
+	total_number = len(tmplist)
+	end_time = time.clock()#计时终点
 	response_body = resultpage_part1\
+	    +"<p>您的文本总共"+str(total_number)\
+	    +"个单词，分析用时"+str(end_time-start_time)+"秒</p>"\
 	    + resultcontent\
 	    +"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
 	    +resultpage_part2
@@ -142,7 +157,7 @@ def analyzer(sourcecontent):
     #使用正则表达式，把单词提出出来，并都修改为小写格式
     sourcecontent = re.findall("\w+",str.lower(sourcecontent))
     #去除列表中的重复项，并排序
-    sourcecontent = sorted(list(set(sourcecontent)))
+    sourcecontent = set(sourcecontent)
     #去除含有数字和符号
     source_list = []
     for sourceword in sourcecontent:
@@ -151,24 +166,15 @@ def analyzer(sourcecontent):
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
 	    source_list.append(sourceword)
-    #print os.getcwd()
-    if ostype == "Windows":
-	dictpath = "total.txt"
-    else:
-	dictpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/total.txt"
-    dictfd = codecs.open(dictpath,"r","utf-8")
-    dict_list = []#词典单词列表
-    for dictword in dictfd.readlines():
-	dict_list.append(dictword.strip('\n'))
-    #print(dict_list)
+    #结果为有序字典，便于后期对字典排序
     result = collections.OrderedDict()
     for word in source_list:#对每一个待查词汇
-	if word in dict_list:#如果它在高阶词典里
+	if word in dict_set:#如果它在高阶词典里
 	    try:
 		ranking = corpuslist.index(word)#查找语料库排名
 	    except ValueError:#语料库不包含此单词
 		ranking = -1
-	    result[word] = ranking+1#下标加1为排名
+	    result[word] = ranking+1#下标加1为排名    
     #按照值排序
     result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
     return result
