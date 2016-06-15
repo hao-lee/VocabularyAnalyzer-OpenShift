@@ -196,7 +196,7 @@ def save_log(environ,sourcecontent):
 	logpath = "log.txt"
     else:
 	logpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/log.txt"    
-    logfd = open("log.txt","a")
+    logfd = open(logpath,"a")
     logfd.write("用户IP："+user_ip+" "+location+"\n"+"提交内容："+sourcecontent+"\n\n")
     logfd.close()
 
