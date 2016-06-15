@@ -65,6 +65,7 @@ submitpage = '''<!doctype html>
 </head>
 <body>
 <h1 align="center">Vocabulary Analyzer V0.3</h1>
+<p align="center"><B><font color="#0011ee">本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请 <a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a></font></B></p>
 <p>该在线工具可以对英文文本进行分析，提取出里面的高难度词汇。该工具是基于内置的词库来识别生词的,词库里面的单词是由专四、专八、托福、雅思、SAT、GRE的核心词汇表经过合并、排序、去重而来的，总计11567个单词，基本上全是比较难的词汇，但也不排除里面含有个别的四六级低阶词汇。</p>
 <p>Tips:因为英语文本中的单词有很多都不是原形形态，而词库中都是原形，所以会有一些单词匹配不上，为了达到更好的识别效果需要将文本进行lemmatize（词形还原）。
 请打开<a href=\"http://textanalysisonline.com/mbsp-word-lemmatize\" 
@@ -73,14 +74,12 @@ Lemmatize\"，结果中右侧的文本就是还原后的。对还原后的文本
 <p>本工具同时内置了coca语料库中前20000个常用单词，会对提取出的单词按照常用程度排序。</p>
 <form method="post" action=""> 
       <div style="text-align:center">
-      <textarea name="inputtext" cols=130 rows=20>请在此粘贴文本</textarea>
+      <textarea name="inputtext" cols=130 rows=20 >粘贴文本</textarea>
       <p> 
-         <input type="submit" value="请怒戳此按钮以便提交检测" style='font-size:30px' />
+         <input type="submit" value="请怒戳此按钮以便提交检测" style='font-size:29px' />
       </p>
       </div>
 </form>
-<hr>
-<h2><B><font color="#0011ee">本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请<a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a></font></B></h2>
 </body>
 </html>'''
 #这是结果页面
