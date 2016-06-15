@@ -90,7 +90,6 @@ resultpage_part2 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
-    print environ
     ###############
     print environ['REQUEST_METHOD'],environ['PATH_INFO']
     ###############
@@ -178,6 +177,7 @@ def analyzer(sourcecontent):
 #记录用户数据
 def save_log(environ,sourcecontent):
     try:
+	print environ['HTTP_X_FORWARDED_FOR'].split(',')
 	user_ip = environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
     except KeyError:
 	user_ip = environ['REMOTE_ADDR']
