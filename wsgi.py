@@ -189,7 +189,7 @@ def save_log(environ,sourcecontent):
     result = re.findall(r'(<li>.*?</li>)',s)
     location = ""
     for i in result:
-	location += i[4:-5]+" "
+	location += i[4:-5]+"\n"
     #解析物理地址
     location = location.decode("gb2312").encode("utf-8")
     #保存文件
@@ -198,7 +198,7 @@ def save_log(environ,sourcecontent):
     else:
 	logpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/log.txt"    
     logfd = open(logpath,"a")
-    logfd.write("用户IP："+user_ip+" "+location+"\n"+"提交内容："+sourcecontent+"\n\n")
+    logfd.write("用户IP："+user_ip+" "+location+"提交内容："+sourcecontent+"\n\n")
     logfd.close()
 
 #
