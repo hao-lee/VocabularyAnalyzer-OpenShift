@@ -12,6 +12,7 @@ import re
 import platform
 import collections
 from collections import OrderedDict
+import urllib2
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
@@ -110,7 +111,9 @@ def application(environ, start_response):
         )
 	ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
 	sourcecontent = post['inputtext'].value
-	#调用
+	#保留用户请求日志
+	save_log(environ,sourcecontent)	
+	#调用分析器
 	result = analyzer(sourcecontent);
 	resultcontent = ""
 	for word,ranking in result.iteritems():
@@ -169,6 +172,27 @@ def analyzer(sourcecontent):
     #按照值排序
     result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
     return result
+
+
+#记录用户数据
+def save_log(environ,sourcecontent):
+    try:
+	user_ip = environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+    except KeyError:
+	user_ip = environ['REMOTE_ADDR']
+	
+    url = "http://www.ip138.com/ips138.asp?ip=%s&action=2" % user_ip
+    u = urllib2.urlopen(url)
+    s = u.read()
+    #Get IP Address Location
+    result = re.findall(r'(<li>.*?</li>)',s)
+    location = ""
+    for i in result:
+	location += i[4:-5]
+    location = location.decode("gb2312").encode("utf-8")
+    logfd = open("log.txt","a")
+    logfd.write("用户IP："+user_ip+" "+location+"\n"+"提交内容："+sourcecontent+"\n\n")
+    logfd.close()
 
 #
 # Below for testing only
