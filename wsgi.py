@@ -135,8 +135,8 @@ def application(environ, start_response):
 	total_number = len(tmplist)
 	end_time = time.clock()#计时终点
 	response_body = resultpage_part1\
-	    +"<p>您的文本总共"+str(total_number)\
-	    +"个单词，分析用时"+str(end_time-start_time)+"秒</p>"\
+	    +"<p>您的文本总共 "+str(total_number)\
+	    +" 个单词，分析用时 "+str(end_time-start_time)+" 秒</p>"\
 	    + resultcontent\
 	    +"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
 	    +resultpage_part2
