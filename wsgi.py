@@ -189,7 +189,13 @@ def save_log(environ,sourcecontent):
     location = ""
     for i in result:
 	location += i[4:-5]
+    #解析物理地址
     location = location.decode("gb2312").encode("utf-8")
+    #保存文件
+    if ostype == "Windows":
+	logpath = "log.txt"
+    else:
+	logpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/log.txt"    
     logfd = open("log.txt","a")
     logfd.write("用户IP："+user_ip+" "+location+"\n"+"提交内容："+sourcecontent+"\n\n")
     logfd.close()
