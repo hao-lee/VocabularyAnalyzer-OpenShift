@@ -176,9 +176,9 @@ def analyzer(sourcecontent):
 
 #记录用户数据
 def save_log(environ,sourcecontent):
+    #http://stackoverflow.com/questions/7835030/，可以从HTTP_X_FORWARDED_FOR提取真实IP，但是不太好用。	#经过对Openshift日志文件app-root/logs/python.log的分析，发现除了HTTP_X_FORWARDED_FOR外，HTTP_X_REAL_IP也可以获得真实的IP地址，而且更简单。    
     try:
-	print "\n注意：\n"+environ['HTTP_X_REAL_IP']
-	user_ip = environ['HTTP_X_FORWARDED_FOR'].split(',')[-1].strip()
+	user_ip = environ['HTTP_X_REAL_IP']
     except KeyError:
 	user_ip = environ['REMOTE_ADDR']
 	
