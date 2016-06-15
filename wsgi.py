@@ -189,7 +189,7 @@ def save_log(environ,sourcecontent):
     result = re.findall(r'(<li>.*?</li>)',s)
     location = ""
     for i in result:
-	location += i[4:-5]
+	location += i[4:-5]+" "
     #解析物理地址
     location = location.decode("gb2312").encode("utf-8")
     #保存文件
