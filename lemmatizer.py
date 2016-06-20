@@ -7,8 +7,8 @@ import os, sys;
 import chardet
 import MBSP
 #如果MBSP服务器没有启动则启动服务器，Python执行完毕后MBSP服务器不会关闭，这样以后就不用临时启动MBSP服务器了。
-if not MBSP.config.autostart:
-	MBSP.start()
+#if not MBSP.config.autostart:
+MBSP.start()
 
 def lemmatizer(sourcelist):
 	
