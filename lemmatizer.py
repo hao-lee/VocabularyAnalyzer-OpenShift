@@ -10,10 +10,10 @@ import MBSP
 #if not MBSP.config.autostart:
 MBSP.start()
 
-#输入处理前的单词列表，返回处理后的单词列表，如果需要处理的单词过多，则分片处理。
+#输入处理前的单词列表，返回处理后的单词列表，如果需要处理的单词过多，MBSP会长时间无反应甚至直接崩溃，从而导致出现504超时错误，所以对于这种情况要分片处理。
 def lemmatizer(sourcelist):
 	list_length = len(sourcelist)
-	if list_length <= 500:#待处理单词少于500，直接处理，不分片
+	if list_length <= 1000:#待处理单词少于500，直接处理，不分片
 		return lemmatizer_core(sourcelist)
 	#分片
 	result_list = []
