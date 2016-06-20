@@ -14,7 +14,7 @@ import collections
 from collections import OrderedDict
 import urllib2
 import time
-import lemmatizer
+from lemmatizer import lemmatizer
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
