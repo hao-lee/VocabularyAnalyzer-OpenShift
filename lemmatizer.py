@@ -5,7 +5,6 @@
 #本仓库中的MBSP目录是由MBSP.tar.gz解压而来，已经编译好，解压即用。
 import os, sys;
 import MBSP
-
 #如果MBSP服务器没有启动则启动服务器，Python执行完毕后MBSP服务器不会关闭，这样以后就不用临时启动MBSP服务器了。
 if not MBSP.config.autostart:
 	MBSP.start()
@@ -14,6 +13,7 @@ def lemmatizer(sourcelist):
 	
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
 	input_str = ' '.join(sourcelist)
+	print chardet.detect(input_str),input_str,input_str.encode("utf-8")
 	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
 	return_str = str(MBSP.lemmatize(input_str, tokenize=True))
 	return_list = return_str.split(' ')
