@@ -4,6 +4,7 @@
 #退到和MBSP同级目录（不然找不到MBSP模块），用Python命令行或者写个Python程序（例如这个程序），推送到Openshift就可以用了。
 #本仓库中的MBSP目录是由MBSP.tar.gz解压而来，已经编译好，解压即用。
 import os, sys;
+import chardet
 import MBSP
 #如果MBSP服务器没有启动则启动服务器，Python执行完毕后MBSP服务器不会关闭，这样以后就不用临时启动MBSP服务器了。
 if not MBSP.config.autostart:
