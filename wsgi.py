@@ -177,7 +177,6 @@ def analyzer(sourcestring):
 	sourcelist = lemmatizer.lemmatizer(sourcelist)    
     #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
-    print(type(sourcelist))
     for word in sourcelist:#对每一个待查词汇
 	if word in dict_set:#如果它在高阶词典里
 	    try:
