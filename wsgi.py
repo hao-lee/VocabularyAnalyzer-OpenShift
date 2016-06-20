@@ -14,6 +14,7 @@ import collections
 from collections import OrderedDict
 import urllib2
 import time
+import lemmatizer
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
@@ -123,7 +124,13 @@ def application(environ, start_response):
 	ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
 	sourcecontent = post['inputtext'].value
 	#保留用户请求日志
-	save_log(environ,sourcecontent)	
+	save_log(environ,sourcecontent)
+	if ostype == "Windows":
+	    #Windows上MBSP没法用，所以本地测试时不进行lemmatize
+	    pass
+	else:
+	    #lemmatization
+	    sourcecontent = lemmatizer(sourcecontent)
 	#调用分析器
 	result = analyzer(sourcecontent);
 	resultcontent = ""
@@ -156,9 +163,9 @@ def application(environ, start_response):
 def analyzer(sourcecontent):
     #使用正则表达式，把单词提出出来，并都修改为小写格式
     sourcecontent = re.findall("\w+",str.lower(sourcecontent))
-    #去除列表中的重复项，并排序
+    #去除列表中的重复项
     sourcecontent = set(sourcecontent)
-    #去除含有数字和符号
+    #去除含有的数字和符号
     source_list = []
     for sourceword in sourcecontent:
 	m = re.search("\d+",sourceword)
