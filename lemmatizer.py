@@ -14,6 +14,7 @@ def lemmatizer(sourcelist):
 	
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
 	input_str = ' '.join(sourcelist)
+	print input_str
 	#如果向MBSP.lemmatize传递的字符串为空（当用户提交一句纯中文时），则MBSP会出现异常ValueError: list.index(x): x not in list。所以，此处检测一下，如果是空，那就随便赋值。
 	if input_str == "":
 		input_str = "abc"
