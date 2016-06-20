@@ -101,7 +101,7 @@ resultpage_part2 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
-    start_time = time.clock()#计时起点
+    start_time = time.time()#计时起点
     ###############
     print environ['REQUEST_METHOD'],environ['PATH_INFO']
     ###############
@@ -134,7 +134,7 @@ def application(environ, start_response):
 	
 	tmplist = sourcestring.split(" ")
 	total_number = len(tmplist)
-	end_time = time.clock()#计时终点
+	end_time = time.time()#计时终点
 	response_body = resultpage_part1\
 	    +"<p>您的文本总共 "+str(total_number)\
 	    +" 个单词，分析用时 "+str(end_time-start_time)+" 秒</p>"\
