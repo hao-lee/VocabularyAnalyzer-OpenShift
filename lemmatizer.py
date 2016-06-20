@@ -11,4 +11,5 @@ if not MBSP.config.autostart:
 	MBSP.start()
 
 def lemmatizer(sourcecontent):
-	return MBSP.lemmatize(sourcecontent, tokenize=True)
+	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
+	return str(MBSP.lemmatize(sourcecontent, tokenize=True))

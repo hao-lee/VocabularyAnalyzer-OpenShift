@@ -125,12 +125,12 @@ def application(environ, start_response):
 	sourcecontent = post['inputtext'].value
 	#保留用户请求日志
 	save_log(environ,sourcecontent)
-	#if ostype == "Windows":
-	    ##Windows上MBSP没法用，所以本地测试时不进行lemmatize
-	    #pass
-	#else:
-	    ##lemmatization
-	    #sourcecontent = lemmatizer.lemmatizer(sourcecontent)
+	if ostype == "Windows":
+	    #Windows上MBSP没法用，所以本地测试时不进行lemmatize
+	    pass
+	else:
+	    #lemmatization
+	    sourcecontent = lemmatizer.lemmatizer(sourcecontent)
 	#调用分析器
 	result = analyzer(sourcecontent);
 	resultcontent = ""
