@@ -11,5 +11,4 @@ if not MBSP.config.autostart:
 	MBSP.start()
 
 def lemmatizer(sourcecontent):
-	#return MBSP.lemmatize(sourcecontent, tokenize=True)
-	return sourcecontent
+	return MBSP.lemmatize(sourcecontent, tokenize=True)

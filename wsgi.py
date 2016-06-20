@@ -130,7 +130,7 @@ def application(environ, start_response):
 	    pass
 	else:
 	    #lemmatization
-	    sourcecontent = lemmatizer(sourcecontent)
+	    sourcecontent = lemmatizer.lemmatizer(sourcecontent)
 	#调用分析器
 	result = analyzer(sourcecontent);
 	resultcontent = ""
