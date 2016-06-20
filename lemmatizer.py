@@ -10,10 +10,23 @@ import MBSP
 #if not MBSP.config.autostart:
 MBSP.start()
 
+#输入处理前的单词列表，返回处理后的单词列表，如果需要处理的单词过多，则分片处理。
 def lemmatizer(sourcelist):
-	
+	list_length = len(sourcelist)
+	if list_length <= 500:#待处理单词少于500，直接处理，不分片
+		return lemmatizer_core(sourcelist)
+	#分片
+	result_list = []
+	for i in range(0,list_length,500):
+		sourcelist_slice = sourcelist[i:i+3]
+		result_list += lemmatizer_core(sourcelist_slice)
+	return result_list
+
+
+#输入处理前的单词列表，返回处理后的单词列表
+def lemmatizer_core(sourcelist_slice):
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
-	input_str = ' '.join(sourcelist)
+	input_str = ' '.join(sourcelist_slice)
 	print input_str
 	#如果向MBSP.lemmatize传递的字符串为空（当用户提交一句纯中文时），则MBSP会出现异常ValueError: list.index(x): x not in list。所以，此处检测一下，如果是空，那就随便赋值。
 	if input_str == "":
