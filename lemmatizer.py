@@ -13,7 +13,7 @@ if not MBSP.config.autostart:
 def lemmatizer(sourcelist):
 	
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
-	input_str = ' '.join(sourcelist).decode('ascii').encode('utf-8')
+	input_str = ' '.join(sourcelist)
 	print chardet.detect(input_str)
 	print input_str
 	print input_str.encode("utf-8")
