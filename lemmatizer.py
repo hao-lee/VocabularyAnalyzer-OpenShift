@@ -14,7 +14,7 @@ MBSP.start()
 def lemmatizer_main(sourcelist):
 	list_length = len(sourcelist)
 	#如果待处理单词少于500，直接处理，不分片；经测试，阀值为500时，处理用时似乎最少。
-	threshold = 500
+	threshold = 300
 	if list_length <= threshold:
 		return lemmatizer_core(sourcelist)
 	#分片
