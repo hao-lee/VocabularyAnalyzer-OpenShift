@@ -14,7 +14,7 @@ import collections
 from collections import OrderedDict
 import urllib2
 import time
-from lemmatizer import lemmatizer
+import lemmatizer
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
@@ -174,7 +174,7 @@ def analyzer(sourcestring):
 	pass
     else:
 	#lemmatization，传入list，返回值也是list，只不过词形被还原了
-	sourcelist = lemmatizer(sourcelist)    
+	sourcelist = lemmatizer.lemmatizer(sourcelist)    
     #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
     for word in sourcelist:#对每一个待查词汇
