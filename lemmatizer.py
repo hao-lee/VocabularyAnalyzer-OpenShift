@@ -21,6 +21,7 @@ def lemmatizer_main(sourcelist):
 	for i in range(0,list_length,500):
 		sourcelist_slice = sourcelist[i:i+3]
 		result_list += lemmatizer_core(sourcelist_slice)
+		print result_list
 	return result_list
 
 
