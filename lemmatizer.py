@@ -16,8 +16,5 @@ def lemmatizer(sourcelist):
 	input_str = ' '.join(sourcelist)
 	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
 	return_str = str(MBSP.lemmatize(input_str, tokenize=True))
-	print return_str
 	return_list = return_str.split(' ')
-	print return_list
-	print type(return_list)
-	return
+	return return_list
