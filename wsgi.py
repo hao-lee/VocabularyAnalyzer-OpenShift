@@ -175,7 +175,8 @@ def analyzer(sourcestring):
 	#Windows上MBSP没法用，所以本地测试时不进行lemmatize
 	pass 
     else:
-	sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
+	pass
+	#sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
     #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
     for word in sourcelist:#对每一个待查词汇
