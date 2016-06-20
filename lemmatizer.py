@@ -13,7 +13,7 @@ if not MBSP.config.autostart:
 def lemmatizer(sourcelist):
 	
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
-	input_str = ' '.join(sourcelist)
+	input_str = ' '.join(sourcelist).decode('ascii').encode('utf-8')
 	print chardet.detect(input_str),input_str,input_str.encode("utf-8")
 	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
 	return_str = str(MBSP.lemmatize(input_str, tokenize=True))
