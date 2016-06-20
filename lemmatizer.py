@@ -14,11 +14,10 @@ def lemmatizer(sourcelist):
 	
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
 	input_str = ' '.join(sourcelist)
-	#如果向MBSP.lemmatize传递的字符串为空（当用户提交一句纯中文时），则MBSP会出现异常。所以，此处检测一下。
+	#如果向MBSP.lemmatize传递的字符串为空（当用户提交一句纯中文时），则MBSP会出现异常ValueError: list.index(x): x not in list。所以，此处检测一下，如果是空，那就随便赋值。
 	if input_str == "":
 		input_str = "abc"
 	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
-	#return_str = str(MBSP.lemmatize(input_str, tokenize=True))
-	#return_list = return_str.split(' ')
-	#return return_list
-	return sourcelist
+	return_str = str(MBSP.lemmatize(input_str, tokenize=True))
+	return_list = return_str.split(' ')
+	return return_list
