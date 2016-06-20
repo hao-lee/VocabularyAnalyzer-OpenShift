@@ -19,4 +19,5 @@ def lemmatizer(sourcelist):
 	print return_str
 	return_list = return_str.split(' ')
 	print return_list
+	print type(return_list)
 	return
