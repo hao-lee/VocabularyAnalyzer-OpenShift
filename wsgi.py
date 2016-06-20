@@ -167,13 +167,14 @@ def analyzer(sourcestring):
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
 	    sourcelist_tmp.append(sourceword)
+    #现在单词初步处理完成
     sourcelist = sourcelist_tmp
-    #词形还原
+    #进行词形还原。到这里为止，sourcelist里面已经都是英文单词，没有乱七八糟的表标点符号等字符，不会导致MBSP出错了。
     if ostype == "Windows":
 	#Windows上MBSP没法用，所以本地测试时不进行lemmatize
 	pass
     else:
-	#lemmatization，传入list，返回值也是list，只不过词形被还原了
+	#lemmatization，传入list，返回值也是list（只不过词形被还原了）
 	sourcelist = lemmatizer.lemmatizer(sourcelist)    
     #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
