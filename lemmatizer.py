@@ -11,9 +11,10 @@ import MBSP
 MBSP.start()
 
 #输入处理前的单词列表，返回处理后的单词列表，如果需要处理的单词过多，MBSP会长时间无反应甚至直接崩溃，从而导致出现504超时错误，所以对于这种情况要分片处理。
-def lemmatizer(sourcelist):
+def lemmatizer_main(sourcelist):
 	list_length = len(sourcelist)
-	if list_length <= 500:#待处理单词少于500，直接处理，不分片
+	#如果待处理单词少于500，直接处理，不分片；经测试，阀值为500时，处理用时似乎最少。
+	if list_length <= 500:
 		return lemmatizer_core(sourcelist)
 	#分片
 	result_list = []
@@ -27,11 +28,9 @@ def lemmatizer(sourcelist):
 def lemmatizer_core(sourcelist_slice):
 	#sourcecontent是列表，这里先转为字符串，以空格为分隔符
 	input_str = ' '.join(sourcelist_slice)
-	print input_str
 	#如果向MBSP.lemmatize传递的字符串为空（当用户提交一句纯中文时），则MBSP会出现异常ValueError: list.index(x): x not in list。所以，此处检测一下，如果是空，那就随便赋值。
 	if input_str == "":
 		input_str = "abc"
 	#MBSP.lemmatize返回值为MBSP.mbsp.TokenString类型，这是一种字符串的封装，所以在这里要转为普通字符串，不然analyzer函数里的lower函数不识别该类型。
-	return_str = str(MBSP.lemmatize(input_str, tokenize=True))
-	return_list = return_str.split(' ')
-	return return_list
+	output_str = str(MBSP.lemmatize(input_str, tokenize=True))
+	return output_str.split(' ')#切分成list返回

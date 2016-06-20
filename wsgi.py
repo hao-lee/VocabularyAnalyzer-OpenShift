@@ -127,6 +127,7 @@ def application(environ, start_response):
 	save_log(environ,sourcestring)
 	#调用分析器
 	result = analyzer(sourcestring);
+	#拼接html格式的结果
 	resultcontent = ""
 	for word,ranking in result.iteritems():
 	    resultcontent = resultcontent+word+"&nbsp"\
@@ -174,7 +175,7 @@ def analyzer(sourcestring):
 	#Windows上MBSP没法用，所以本地测试时不进行lemmatize
 	pass 
     else:
-	sourcelist = lemmatizer.lemmatizer(sourcelist)    
+	sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
     #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
     for word in sourcelist:#对每一个待查词汇
