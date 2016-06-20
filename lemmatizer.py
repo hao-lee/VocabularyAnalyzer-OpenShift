@@ -14,12 +14,13 @@ MBSP.start()
 def lemmatizer_main(sourcelist):
 	list_length = len(sourcelist)
 	#如果待处理单词少于500，直接处理，不分片；经测试，阀值为500时，处理用时似乎最少。
-	if list_length <= 500:
+	threshold = 500
+	if list_length <= threshold:
 		return lemmatizer_core(sourcelist)
 	#分片
 	result_list = []
-	for i in range(0,list_length,500):
-		sourcelist_slice = sourcelist[i:i+3]
+	for i in range(0,list_length, threshold):
+		sourcelist_slice = sourcelist[i:i + threshold]
 		result_list += lemmatizer_core(sourcelist_slice)
 		print result_list
 	return result_list
