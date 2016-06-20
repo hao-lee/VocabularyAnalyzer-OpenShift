@@ -122,23 +122,17 @@ def application(environ, start_response):
             keep_blank_values=True
         )
 	ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
-	sourcecontent = post['inputtext'].value
+	sourcestring = post['inputtext'].value
 	#保留用户请求日志
-	save_log(environ,sourcecontent)
-	if ostype == "Windows":
-	    #Windows上MBSP没法用，所以本地测试时不进行lemmatize
-	    pass
-	else:
-	    #lemmatization
-	    sourcecontent = lemmatizer.lemmatizer(sourcecontent)
+	save_log(environ,sourcestring)
 	#调用分析器
-	result = analyzer(sourcecontent);
+	result = analyzer(sourcestring);
 	resultcontent = ""
 	for word,ranking in result.iteritems():
 	    resultcontent = resultcontent+word+"&nbsp"\
 	        +str(ranking)+"<br>"
 	
-	tmplist = sourcecontent.split(" ")
+	tmplist = sourcestring.split(" ")
 	total_number = len(tmplist)
 	end_time = time.clock()#计时终点
 	response_body = resultpage_part1\
@@ -160,22 +154,30 @@ def application(environ, start_response):
     start_response(status, response_headers)
     return [response_body]
 
-def analyzer(sourcecontent):
-    #使用正则表达式，把单词提出出来，并都修改为小写格式
-    sourcecontent = re.findall("\w+",str.lower(sourcecontent))
-    #去除列表中的重复项
-    sourcecontent = set(sourcecontent)
+def analyzer(sourcestring):
+    #使用正则表达式，把单词提出出来，并都修改为小写格式，返回列表类型
+    sourcelist = re.findall("\w+",str.lower(sourcestring))
+    #去除列表中的重复项，《双城记》经过去重后单词数目由139461变为9951
+    sourcelist = set(sourcelist)
     #去除含有的数字和符号
-    source_list = []
-    for sourceword in sourcecontent:
+    sourcelist_tmp = []
+    for sourceword in sourcelist:
 	m = re.search("\d+",sourceword)
 	n = re.search("\W+",sourceword)
 	#if not m and  not n and len(i)>4:
 	if not m and  not n:
-	    source_list.append(sourceword)
-    #结果为有序字典，便于后期对字典排序
+	    sourcelist_tmp.append(sourceword)
+    sourcelist = sourcelist_tmp
+    #词形还原
+    if ostype == "Windows":
+	#Windows上MBSP没法用，所以本地测试时不进行lemmatize
+	pass
+    else:
+	#lemmatization，传入list，返回值也是list，只不过词形被还原了
+	sourcelist = lemmatizer(sourcelist)    
+    #最终结果为有序字典result，便于后期对字典排序
     result = collections.OrderedDict()
-    for word in source_list:#对每一个待查词汇
+    for word in sourcelist:#对每一个待查词汇
 	if word in dict_set:#如果它在高阶词典里
 	    try:
 		ranking = corpuslist.index(word)#查找语料库排名
