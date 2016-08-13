@@ -15,17 +15,7 @@ import time
 import nlp
 import json
 
-#部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
-if ostype == "Windows":
-	pass
-else:
-	virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
-	virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
-	try:
-		execfile(virtualenv, dict(__file__=virtualenv))
-	except IOError:
-		pass
 
 #coca 20000词频表路径和高阶词库路径
 if ostype == "Windows":
