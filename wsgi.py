@@ -27,7 +27,7 @@ else:
 
 #读取词频表，注意要用list，保证次序（排名）
 corpuslist = []
-corpusfd = open(corpuspath, 'r')
+corpusfd = open(corpuspath, 'r',, encoding='utf-8')
 for corpusword in corpusfd.readlines():
 	corpuslist.append(corpusword.strip('\n'))
 print (len(corpuslist),"words have been read into memory.")
