@@ -23,23 +23,21 @@ def tokenizer(sourcestring):
 	sourcestring = str.lower(sourcestring)
 	text = nltk.word_tokenize(sourcestring)	#分词
 	treebank_tagged_list = nltk.pos_tag(text)	#打标签
-	#tag转换之后的内容，以字典来存储更方便
-	wordnet_tagged_dict = {}
+	#tag转换之后的内容
+	wordnet_tagged_list = []
 	#将treebank类型的tag(如NN、NNP等),转为wordnet类型的tag(如wordnet.NOUN等)
-	for one_tuple in treebank_tagged_list:
-		wordnet_tagged_dict[one_tuple[0]] = \
-		        get_wordnet_pos(one_tuple[1])
-	return wordnet_tagged_dict	#单词<---->词性，一一对应
+	for treeback_tuple in treebank_tagged_list:
+		wordnet_tuple = (treeback_tuple[0],get_wordnet_pos(treeback_tuple[1]))
+		wordnet_tagged_list.append(wordnet_tuple)
+	return wordnet_tagged_list	#单词<---->词性，一一对应
 
-def lemmatizer(wordnet_tagged_dict):
+def lemmatizer(wordnet_tagged_list):
 	wordnet_lemmatizer = WordNetLemmatizer()
 	lemm_list = []	#存储还原后的单词列表
-	for word,tag in wordnet_tagged_dict.items():
-		print (word,tag)
-		lemma  = wordnet_lemmatizer.lemmatize(word, tag)
+	for word_tag in wordnet_tagged_list:
+		lemma = wordnet_lemmatizer.lemmatize(word_tag[0], word_tag[1])
 		lemm_list.append(lemma)
-	print (lemm_list)
-	return lemm_list
+	return set(lemm_list)
 
-#wordnet_tagged_dict = tokenizer("I’ normalized U.S. relations with Cuba ")
-#lemmatizer(wordnet_tagged_dict)
+#wordnet_tagged_list = tokenizer("I’ normalized U.S. relations with Cuba ")
+#print(lemmatizer(wordnet_tagged_list))

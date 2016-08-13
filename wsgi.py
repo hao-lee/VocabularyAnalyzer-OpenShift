@@ -125,10 +125,10 @@ def application(environ, start_response):
 		#保留用户请求日志
 		save_log(environ,sourcestring)
 		#调用分析器
-		result = analyzer(sourcestring);
+		result_dict = analyzer(sourcestring);
 		#拼接html格式的结果
 		resultcontent = ""
-		for word,ranking in result.items():
+		for word,ranking in result_dict.items():
 			resultcontent = resultcontent+word+"&nbsp"\
 			        +str(ranking)+"<br>"
 
@@ -137,7 +137,8 @@ def application(environ, start_response):
 		end_time = time.time()#计时终点
 		response_body = resultpage_part1\
 		        +u"<p>您的文本总共 "+str(total_number)\
-		        +u" 个单词，分析用时 "+str(end_time-start_time)+" 秒</p>"\
+		        +u" 个单词，分析用时 "+str(end_time-start_time)\
+		        +" 秒，共匹配到 "+str(len(result_dict))+" 个生词</p>"\
 		        + resultcontent\
 		        +u"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
 		        +resultpage_part2
@@ -156,43 +157,20 @@ def application(environ, start_response):
 	return [response_body]
 
 def analyzer(sourcestring):
-	##使用正则表达式，把单词提出出来，并都修改为小写格式，返回列表类型
-	#sourcelist = re.findall("\w+",str.lower(sourcestring))
-	##去除列表中的重复项，《双城记》经过去重后单词数目由139461变为9951
-	#sourcelist = set(sourcelist)
-	##去除含有的数字和符号
-	#sourcelist_tmp = []
-	#for sourceword in sourcelist:
-		#m = re.search("\d+",sourceword)
-		#n = re.search("\W+",sourceword)
-		##if not m and  not n and len(i)>4:
-		#if not m and  not n:
-			#sourcelist_tmp.append(sourceword)
-	##现在单词初步处理完成
-	#sourcelist = sourcelist_tmp
-	##进行词形还原。到这里为止，sourcelist里面已经都是英文单词，没有乱七八糟的表标点符号等字符，不会导致MBSP出错了。
-	#if ostype == "Windows":
-		##Windows上MBSP没法用，所以本地测试时不进行lemmatize
-		#pass 
-	#else:
-		#pass
-		##sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
-	##最终结果为有序字典result，便于后期对字典排序
-
 	wordnet_tagged_dict = nlp.tokenizer(sourcestring)
-	sourcelist = nlp.lemmatizer(wordnet_tagged_dict)
-
-	result = collections.OrderedDict()
-	for word in sourcelist:#对每一个待查词汇
+	lemma_set = nlp.lemmatizer(wordnet_tagged_dict)
+	#最终结果为有序字典result，便于后期对字典排序
+	result_dict = collections.OrderedDict()
+	for word in lemma_set:#对每一个待查词汇
 		if word in dict_set:#如果它在高阶词典里
 			try:
 				ranking = corpuslist.index(word)#查找语料库排名
 			except ValueError:#语料库不包含此单词
 				ranking = -1
-			result[word] = ranking+1#下标加1为排名    
+			result_dict[word] = ranking+1#下标加1为排名    
 	#按照值排序
-	result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
-	return result
+	result_dict = OrderedDict(sorted(result_dict.items(), key=lambda t: t[1]))
+	return result_dict
 
 
 #记录用户数据
@@ -217,7 +195,8 @@ def save_log(environ,sourcecontent):
 	else:
 		logpath = os.environ['OPENSHIFT_REPO_DIR'] + "log.txt"    
 	logfd = open(logpath,"a")
-	logfd.write("User IP: "+user_ip+" "+country+","+region+","+city+"\nContent: "+sourcecontent+"\n\n")
+	logfd.write("User IP: "+user_ip+" "+country+","+region+","\
+	            +city+"\nContent: "+sourcecontent+"\n\n")
 	logfd.close()
 
 #
