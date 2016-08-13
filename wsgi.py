@@ -27,14 +27,14 @@ else:
 
 #读取词频表，注意要用list，保证次序（排名）
 corpuslist = []
-corpusfd = open(corpuspath, 'r',encoding='utf-8')
+corpusfd = open(corpuspath, 'r', encoding='utf-8')
 for corpusword in corpusfd.readlines():
 	corpuslist.append(corpusword.strip('\n'))
 print (len(corpuslist),"words have been read into memory.")
 corpusfd.close()
 #读取高阶词库，为了提高查找效率，这里使用dict_set，可以让效率提高7.7倍。
 #也不要把这块代码放到analyzer函数里，那样耗费的时间会高出70多倍。
-dictfd = open(dictpath, 'r')#codecs.open(dictpath,"r","utf-8")
+dictfd = open(dictpath, 'r', encoding='utf-8')#codecs.open(dictpath,"r","utf-8")
 dict_list = []#词典单词列表
 for dictword in dictfd.readlines():
 	dict_list.append(dictword.strip('\n'))
