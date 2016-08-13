@@ -3,8 +3,7 @@
 import os
 import codecs
 import posixpath
-import BaseHTTPServer
-import urllib
+import urllib.request
 import cgi
 import shutil
 import mimetypes
@@ -12,43 +11,43 @@ import re
 import platform
 import collections
 from collections import OrderedDict
-import urllib2
 import time
-import lemmatizer
+import nlp
+import json
 
 #部署到OpenShift时需要下面else语句里面的这几行
 ostype = platform.system()
 if ostype == "Windows":
-    pass
-else:
-    virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
-    virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
-    try:
-	execfile(virtualenv, dict(__file__=virtualenv))
-    except IOError:
 	pass
+else:
+	virtenv = os.environ['OPENSHIFT_PYTHON_DIR'] + '/virtenv/'
+	virtualenv = os.path.join(virtenv, 'bin/activate_this.py')
+	try:
+		execfile(virtualenv, dict(__file__=virtualenv))
+	except IOError:
+		pass
 
 #coca 20000词频表路径和高阶词库路径
 if ostype == "Windows":
-    corpuspath = "coca-20000.txt"
-    dictpath = "total.txt"
+	corpuspath = "coca-20000.txt"
+	dictpath = "total.txt"
 else:
-    corpuspath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/coca-20000.txt"
-    dictpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/total.txt"
+	corpuspath = os.environ['OPENSHIFT_REPO_DIR'] + "coca-20000.txt"
+	dictpath = os.environ['OPENSHIFT_REPO_DIR'] + "total.txt"
 
 #读取词频表，注意要用list，保证次序（排名）
 corpuslist = []
 corpusfd = open(corpuspath, 'r')
 for corpusword in corpusfd.readlines():
-    corpuslist.append(corpusword.strip('\n'))
-print len(corpuslist),"words have been read into memory."
+	corpuslist.append(corpusword.strip('\n'))
+print (len(corpuslist),"words have been read into memory.")
 corpusfd.close()
 #读取高阶词库，为了提高查找效率，这里使用dict_set，可以让效率提高7.7倍。
 #也不要把这块代码放到analyzer函数里，那样耗费的时间会高出70多倍。
 dictfd = open(dictpath, 'r')#codecs.open(dictpath,"r","utf-8")
 dict_list = []#词典单词列表
 for dictword in dictfd.readlines():
-    dict_list.append(dictword.strip('\n'))
+	dict_list.append(dictword.strip('\n'))
 dict_set = set(dict_list)
 dictfd.close()
 #
@@ -101,130 +100,133 @@ resultpage_part2 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
-    start_time = time.time()#计时起点
-    ###############
-    print environ['REQUEST_METHOD'],environ['PATH_INFO']
-    ###############
-    ctype = 'text/plain'
-    if environ['PATH_INFO'] == '/health':
-        response_body = "1"
-    elif environ['PATH_INFO'] == '/env':
-        response_body = ['%s: %s' % (key, value)
-                    for key, value in sorted(environ.items())]
-        response_body = '\n'.join(response_body)
-    ############我的代码###########
-    elif environ['REQUEST_METHOD'] == 'POST' :
-	post_env = environ.copy()
-        post_env['QUERY_STRING'] = ''
-        post = cgi.FieldStorage(
-            fp=environ['wsgi.input'],
-            environ=post_env,
-            keep_blank_values=True
-        )
-	ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
-	sourcestring = post['inputtext'].value
-	#保留用户请求日志
-	save_log(environ,sourcestring)
-	#调用分析器
-	result = analyzer(sourcestring);
-	#拼接html格式的结果
-	resultcontent = ""
-	for word,ranking in result.iteritems():
-	    resultcontent = resultcontent+word+"&nbsp"\
-	        +str(ranking)+"<br>"
-	
-	tmplist = sourcestring.split(" ")
-	total_number = len(tmplist)
-	end_time = time.time()#计时终点
-	response_body = resultpage_part1\
-	    +"<p>您的文本总共 "+str(total_number)\
-	    +" 个单词，分析用时 "+str(end_time-start_time)+" 秒</p>"\
-	    + resultcontent\
-	    +"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
-	    +resultpage_part2
-    elif environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'] == '/VocabularyAnalyzer':
-        ctype = 'text/html'
-        response_body = submitpage
-    else:#GET /favicon.ico
-	ctype = 'text/html'
-	response_body = ""#这次的response_body没什么用
-    #########################################
-    status = '200 OK'
-    response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
-    #
-    start_response(status, response_headers)
-    return [response_body]
+	start_time = time.time()#计时起点
+	###############
+	print (environ['REQUEST_METHOD'],environ['PATH_INFO'])
+	###############
+	ctype = 'text/plain'
+	if environ['PATH_INFO'] == '/health':
+		response_body = "1"
+	elif environ['PATH_INFO'] == '/env':
+		response_body = ['%s: %s' % (key, value)
+		                 for key, value in sorted(environ.items())]
+		response_body = '\n'.join(response_body)
+	############我的代码###########
+	elif environ['REQUEST_METHOD'] == 'POST' :
+		post_env = environ.copy()
+		post_env['QUERY_STRING'] = ''
+		post = cgi.FieldStorage(
+		        fp=environ['wsgi.input'],
+		        environ=post_env,
+		        keep_blank_values=True
+		)
+		ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
+		sourcestring = post['inputtext'].value
+		#保留用户请求日志
+		save_log(environ,sourcestring)
+		#调用分析器
+		result = analyzer(sourcestring);
+		#拼接html格式的结果
+		resultcontent = ""
+		for word,ranking in result.items():
+			resultcontent = resultcontent+word+"&nbsp"\
+			        +str(ranking)+"<br>"
+
+		tmplist = sourcestring.split(" ")
+		total_number = len(tmplist)
+		end_time = time.time()#计时终点
+		response_body = resultpage_part1\
+		        +u"<p>您的文本总共 "+str(total_number)\
+		        +u" 个单词，分析用时 "+str(end_time-start_time)+" 秒</p>"\
+		        + resultcontent\
+		        +u"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
+		        +resultpage_part2
+	elif environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'] == '/VocabularyAnalyzer':
+		ctype = 'text/html'
+		response_body = submitpage
+	else:#GET /favicon.ico
+		ctype = 'text/html'
+		response_body = ""#这次的response_body没什么用
+	response_body = response_body.encode('utf-8')	#Python3必加此行
+	#########################################
+	status = '200 OK'
+	response_headers = [('Content-Type', ctype), ('Content-Length', str(len(response_body)))]
+	#
+	start_response(status, response_headers)
+	return [response_body]
 
 def analyzer(sourcestring):
-    #使用正则表达式，把单词提出出来，并都修改为小写格式，返回列表类型
-    sourcelist = re.findall("\w+",str.lower(sourcestring))
-    #去除列表中的重复项，《双城记》经过去重后单词数目由139461变为9951
-    sourcelist = set(sourcelist)
-    #去除含有的数字和符号
-    sourcelist_tmp = []
-    for sourceword in sourcelist:
-	m = re.search("\d+",sourceword)
-	n = re.search("\W+",sourceword)
-	#if not m and  not n and len(i)>4:
-	if not m and  not n:
-	    sourcelist_tmp.append(sourceword)
-    #现在单词初步处理完成
-    sourcelist = sourcelist_tmp
-    #进行词形还原。到这里为止，sourcelist里面已经都是英文单词，没有乱七八糟的表标点符号等字符，不会导致MBSP出错了。
-    if ostype == "Windows":
-	#Windows上MBSP没法用，所以本地测试时不进行lemmatize
-	pass 
-    else:
-	pass
-	#sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
-    #最终结果为有序字典result，便于后期对字典排序
-    result = collections.OrderedDict()
-    for word in sourcelist:#对每一个待查词汇
-	if word in dict_set:#如果它在高阶词典里
-	    try:
-		ranking = corpuslist.index(word)#查找语料库排名
-	    except ValueError:#语料库不包含此单词
-		ranking = -1
-	    result[word] = ranking+1#下标加1为排名    
-    #按照值排序
-    result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
-    return result
+	##使用正则表达式，把单词提出出来，并都修改为小写格式，返回列表类型
+	#sourcelist = re.findall("\w+",str.lower(sourcestring))
+	##去除列表中的重复项，《双城记》经过去重后单词数目由139461变为9951
+	#sourcelist = set(sourcelist)
+	##去除含有的数字和符号
+	#sourcelist_tmp = []
+	#for sourceword in sourcelist:
+		#m = re.search("\d+",sourceword)
+		#n = re.search("\W+",sourceword)
+		##if not m and  not n and len(i)>4:
+		#if not m and  not n:
+			#sourcelist_tmp.append(sourceword)
+	##现在单词初步处理完成
+	#sourcelist = sourcelist_tmp
+	##进行词形还原。到这里为止，sourcelist里面已经都是英文单词，没有乱七八糟的表标点符号等字符，不会导致MBSP出错了。
+	#if ostype == "Windows":
+		##Windows上MBSP没法用，所以本地测试时不进行lemmatize
+		#pass 
+	#else:
+		#pass
+		##sourcelist = lemmatizer.lemmatizer_main(sourcelist)    
+	##最终结果为有序字典result，便于后期对字典排序
+
+	wordnet_tagged_dict = nlp.tokenizer(sourcestring)
+	sourcelist = nlp.lemmatizer(wordnet_tagged_dict)
+
+	result = collections.OrderedDict()
+	for word in sourcelist:#对每一个待查词汇
+		if word in dict_set:#如果它在高阶词典里
+			try:
+				ranking = corpuslist.index(word)#查找语料库排名
+			except ValueError:#语料库不包含此单词
+				ranking = -1
+			result[word] = ranking+1#下标加1为排名    
+	#按照值排序
+	result = OrderedDict(sorted(result.items(), key=lambda t: t[1]))
+	return result
 
 
 #记录用户数据
 def save_log(environ,sourcecontent):
-    #http://stackoverflow.com/questions/7835030/，可以从HTTP_X_FORWARDED_FOR提取真实IP，但是不太好用。	#经过对Openshift日志文件app-root/logs/python.log的分析，发现除了HTTP_X_FORWARDED_FOR外，HTTP_X_REAL_IP也可以获得真实的IP地址，而且更简单。    
-    try:
-	user_ip = environ['HTTP_X_REAL_IP']
-    except KeyError:
-	user_ip = environ['REMOTE_ADDR']
-	
-    url = "http://www.ip138.com/ips138.asp?ip=%s&action=2" % user_ip
-    u = urllib2.urlopen(url)
-    s = u.read()
-    #Get IP Address Location
-    result = re.findall(r'(<li>.*?</li>)',s)
-    location = ""
-    for i in result:
-	location += i[4:-5]+"\n"
-    #解析物理地址
-    location = location.decode("gb2312").encode("utf-8")
-    #保存文件
-    if ostype == "Windows":
-	logpath = "log.txt"
-    else:
-	logpath = "/var/lib/openshift/5749a7f30c1e66521c000168/app-root/runtime/repo/log.txt"    
-    logfd = open(logpath,"a")
-    logfd.write("用户 IP："+user_ip+"\n"+location+"提交内容："+sourcecontent+"\n\n")
-    logfd.close()
+	#http://stackoverflow.com/questions/7835030/，可以从HTTP_X_FORWARDED_FOR提取真实IP，但是不太好用。	#经过对Openshift日志文件app-root/logs/python.log的分析，发现除了HTTP_X_FORWARDED_FOR外，HTTP_X_REAL_IP也可以获得真实的IP地址，而且更简单。    
+	try:
+		user_ip = environ['HTTP_X_REAL_IP']
+	except KeyError:
+		user_ip = environ['REMOTE_ADDR']
+
+	url = "http://freegeoip.net/json/%s" % user_ip
+	u = urllib.request.urlopen(url)
+	ip_info = u.read().decode('utf-8')
+	u.close()
+	json_extract = json.loads(ip_info)
+	country = json_extract['country_name']
+	region = json_extract['region_name']
+	city = json_extract['city']
+	#保存文件
+	if ostype == "Windows":
+		logpath = "log.txt"
+	else:
+		logpath = os.environ['OPENSHIFT_REPO_DIR'] + "log.txt"    
+	logfd = open(logpath,"a")
+	logfd.write("User IP: "+user_ip+" "+country+","+region+","+city+"\nContent: "+sourcecontent+"\n\n")
+	logfd.close()
 
 #
 # Below for testing only
 #
 if __name__ == '__main__':
-    from wsgiref.simple_server import make_server
-    #OpenShift已经自动配置好了端口转发，访问时不用加端口
-    httpd = make_server('localhost', 8051, application)
-    # Wait for a single request, serve it and quit.
-    #httpd.handle_request()
-    httpd.serve_forever()#这里改为永久运行
+	from wsgiref.simple_server import make_server
+	#OpenShift已经自动配置好了端口转发，访问时不用加端口
+	httpd = make_server('localhost', 8051, application)
+	# Wait for a single request, serve it and quit.
+	#httpd.handle_request()
+	httpd.serve_forever()#这里改为永久运行
