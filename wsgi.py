@@ -113,7 +113,7 @@ def application(environ, start_response):
 		ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
 		sourcestring = post['inputtext'].value
 		#保留用户请求日志
-		save_log(environ,sourcestring)
+		#save_log(environ,sourcestring)
 		#调用分析器
 		result_dict = analyzer(sourcestring);
 		#拼接html格式的结果
