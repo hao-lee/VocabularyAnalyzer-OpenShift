@@ -184,7 +184,7 @@ def save_log(environ,sourcecontent):
 		logpath = "log.txt"
 	else:
 		logpath = os.environ['OPENSHIFT_REPO_DIR'] + "log.txt"    
-	logfd = open(logpath,"a")
+	logfd = open(logpath, "a", encoding='utf-8')
 	logfd.write("User IP: "+user_ip+" "+country+","+region+","\
 	            +city+"\nContent: "+sourcecontent+"\n\n")
 	logfd.close()
