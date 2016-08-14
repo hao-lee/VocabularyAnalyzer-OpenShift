@@ -26,11 +26,11 @@ else:
 	dictpath = os.environ['OPENSHIFT_REPO_DIR'] + "total.txt"
 
 #读取词频表，注意要用list，保证次序（排名）
-corpuslist = []
+corpus_list = []
 corpusfd = open(corpuspath, 'r', encoding='utf-8')
 for corpusword in corpusfd.readlines():
-	corpuslist.append(corpusword.strip('\n'))
-print (len(corpuslist),"words have been read into memory.")
+	corpus_list.append(corpusword.strip('\n'))
+print (len(corpus_list),"words have been read into memory.")
 corpusfd.close()
 #读取高阶词库，为了提高查找效率，这里使用dict_set，可以让效率提高7.7倍。
 #也不要把这块代码放到analyzer函数里，那样耗费的时间会高出70多倍。
@@ -113,7 +113,7 @@ def application(environ, start_response):
 		ctype = 'text/html'#这一行不加的话，浏览器直接显示出html源码，不渲染
 		sourcestring = post['inputtext'].value
 		#保留用户请求日志
-		#save_log(environ,sourcestring)
+		save_log(environ,sourcestring)
 		#调用分析器
 		result_dict = analyzer(sourcestring);
 		#拼接html格式的结果
@@ -154,7 +154,7 @@ def analyzer(sourcestring):
 	for word in lemma_set:#对每一个待查词汇
 		if word in dict_set:#如果它在高阶词典里
 			try:
-				ranking = corpuslist.index(word)#查找语料库排名
+				ranking = corpus_list.index(word)#查找语料库排名
 			except ValueError:#语料库不包含此单词
 				ranking = -1
 			result_dict[word] = ranking+1#下标加1为排名    
