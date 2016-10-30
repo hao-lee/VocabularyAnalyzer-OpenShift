@@ -54,11 +54,13 @@ submitpage = '''<!doctype html>
   <title>Vocabulary Analyzer</title>
 </head>
 <body>
-<h1 align="center">Vocabulary Analyzer V0.5</h1>
+<h1 align="center">Vocabulary Analyzer V0.5.1</h1>
 <p align="center"><B><font color="#0011ee">本工具由非营利英语学习论坛 EFL Club 出品，进入论坛请 <a href=\"http://forum.eflclub.me\" target=\"_blank\">点此链接</a></font></B></p>
 <p>该在线工具可以对英文文本进行分析，提取出里面的高难度词汇。该工具是基于内置的词库来识别生词的,词库里面的单词是由专四、专八、托福、雅思、SAT、GRE的核心词汇表经过合并、排序、去重而来的，总计11567个单词，基本上全是比较难的词汇，但也不排除里面含有个别的四六级低阶词汇。</p>
 <p>本工具同时内置了coca语料库中前20000个常用单词，会对提取出的单词按照常用程度排序。</p>
 <p><i>2016-8-14日：重大升级，软件发生版本跳跃，版本号由 V0.3 跳跃到 V0.5，新增词形还原功能(lemmatization)，识别准确率提升 27.8%（处理速度略有降低，不过这么做很值得）</i></p>
+<p><i>2016-10-30日：常规升级 v0.5.1，将生词和排名分为两列，更便于复制生词</i></p>
+<p>后台运算需要时间，请您在结果出来之前不要重复点击提交！</p>
 <form method="post" action="" accept-charset="utf-8"> 
       <div style="text-align:center">
       <textarea name="inputtext" cols=130 rows=20 ></textarea>
@@ -76,14 +78,66 @@ resultpage_part1 = '''<!doctype html>
   <meta charset="utf-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title>Vocabulary Analyzer</title>
+        <style type="text/css"> 
+         body{ 
+         background-color:white;
+         } 
+         .page_two_col { 
+         width:600px; 
+         margin:20px auto; 
+         } 
+         #left { 
+         width:300px; 
+         background-color:#ffbbee;
+         position:absolute; 
+         } 
+         #right { 
+         width:300px; 
+         background-color:#bbbbff;
+         position:absolute; 
+         top:0; 
+         right:0; 
+         } 
+         #foot { 
+         /*background-color:blue;*/
+         } 
+         #main { 
+         position:relative; 
+         /*background-color:green;*/
+         background-image:url(5.gif); 
+         background-repeat:repeat-y; 
+         background-position:left; 
+         } 
+      </style>
 </head>
 <body><div style="text-align:center">
 <h1>以下单词被认为难度较大</h1>
-<p>左侧为单词，右侧为频度排名，排名越小说明越常用，排名为0说明该单词不包括在20000词频表内。</p>
-<hr>
+<p>左侧为单词，右侧为频度排名，排名越小说明越常用，排名为0说明该单词不包括在20000词频表内（很生僻）。</p>
 '''
-#中间拼接上结果，在拼接html结尾元素
-resultpage_part2 = '''</div></body>
+#主div开始
+main_div_start = '''
+<div id="main" class="page_two_col">
+'''
+#两列，左侧
+resultpage_left_start = '''
+<div id="left">
+'''
+resultpage_left_end = '''
+</div>
+'''
+#两列，右侧
+resultpage_right_start = '''
+<div id="right">
+'''
+resultpage_right_end = '''
+</div>
+'''
+#主div闭合
+main_div_end = '''
+</div>
+'''
+#闭合html
+resultpage_part3 = '''</div></body>
 </html>'''
 
 def application(environ, start_response):
@@ -114,10 +168,12 @@ def application(environ, start_response):
 		#调用分析器
 		result_dict = analyzer(sourcestring);
 		#拼接html格式的结果
-		resultcontent = ""
+		wordcontent = ""
+		rankingcontent = ""
 		for word,ranking in result_dict.items():
-			resultcontent = resultcontent+word+"&nbsp"\
-			        +str(ranking)+"<br>"
+			wordcontent = wordcontent + word+"<br>"
+			
+			rankingcontent = rankingcontent+str(ranking)+"<br>"
 
 		tmplist = sourcestring.split(" ")
 		total_number = len(tmplist)
@@ -126,9 +182,17 @@ def application(environ, start_response):
 		        +u"<p>您的文本总共 "+str(total_number)\
 		        +u" 个单词，分析用时 "+str(end_time-start_time)\
 		        +" 秒，共匹配到 "+str(len(result_dict))+" 个生词</p>"\
-		        + resultcontent\
-		        +u"<hr><a href=\"/VocabularyAnalyzer\">Back</a>"\
-		        +resultpage_part2
+		        + "<hr>"\
+		        +u"<a href=\"/VocabularyAnalyzer\">返回继续提交</a><hr>"\
+		        + main_div_start\
+		        + resultpage_left_start\
+		        + wordcontent\
+		        + resultpage_left_end\
+		        + resultpage_right_start\
+		        + rankingcontent\
+		        + resultpage_right_end\
+		        + main_div_end\
+		        +resultpage_part3
 	elif environ['REQUEST_METHOD'] == 'GET' and environ['PATH_INFO'] == '/VocabularyAnalyzer':
 		ctype = 'text/html'
 		response_body = submitpage
